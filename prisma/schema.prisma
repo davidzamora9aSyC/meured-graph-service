@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MeuredFriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELED
+}
+
+enum MeuredSuggestionReasonType {
+  MUTUALS
+  SAME_ENTITY
+  SAME_SPECIALTY
+  TRENDING
+  OTHER
+}
+
+model MeuredFollow {
+  id                 String   @id @default(uuid())
+  followerAuthUserId String
+  followeeAuthUserId String
+  createdAt          DateTime @default(now())
+
+  @@unique([followerAuthUserId, followeeAuthUserId])
+  @@index([followeeAuthUserId])
+  @@index([followerAuthUserId])
+}
+
+model MeuredFriendRequest {
+  id           String                    @id @default(uuid())
+  fromAuthUserId String
+  toAuthUserId   String
+  status       MeuredFriendRequestStatus @default(PENDING)
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  @@index([fromAuthUserId])
+  @@index([toAuthUserId])
+  @@index([status])
+}
+
+model MeuredFriendship {
+  id            String   @id @default(uuid())
+  userAAuthUserId String
+  userBAuthUserId String
+  createdAt     DateTime @default(now())
+
+  @@unique([userAAuthUserId, userBAuthUserId])
+  @@index([userAAuthUserId])
+  @@index([userBAuthUserId])
+}
+
+model MeuredBlock {
+  id                 String   @id @default(uuid())
+  blockerAuthUserId  String
+  blockedAuthUserId  String
+  createdAt          DateTime @default(now())
+
+  @@unique([blockerAuthUserId, blockedAuthUserId])
+  @@index([blockerAuthUserId])
+  @@index([blockedAuthUserId])
+}
+
+model MeuredGraphSuggestion {
+  id                 String                   @id @default(uuid())
+  authUserId         String
+  suggestedAuthUserId String
+  score              Int                      @default(0)
+  reasonType         MeuredSuggestionReasonType @default(OTHER)
+  reasonMetaJson     Json?
+  computedAt         DateTime                 @default(now())
+
+  @@unique([authUserId, suggestedAuthUserId])
+  @@index([authUserId])
+  @@index([score])
+}
